@@ -6,7 +6,9 @@
 #include "main.h"
 
 int currentComb; //stores the combination of buttons that are currently pressed
-int recordingLED = 7; 
+int recordingLED = 7;
+unsigned long ccDebounceTimer; //currentComb debounce timer
+int previousComb; //currentComb debounce comparison
 
 void setup(){
   Serial.begin(9600);
@@ -20,10 +22,7 @@ void setup(){
 //The main chunk of the loop is the central area where its essentially debounce code but for currentComb,
 //which represents the sum of the pressed buttons.
 
-unsigned long ccDebounceTimer; //currentComb debounce timer
-int previousComb; //currentComb debounce comparison
-
-void loop(){  
+void loop(){
   //FROM WAVERECORDPLAY
   if (file.isOpen()) file.close();
   //scan root dir to build track list and set lastTrack
@@ -47,12 +46,11 @@ void loop(){
         }
         ccDebounceTimer = millis(); //set the timer
         previousComb = currentComb; //set previous to current.
-      } 
+      }
     }
-   
     //while (!Serial.available()) {} //loops in here s/serial input; keeping for debugging
     c = Serial.read();
     if (!isdigit(c)); break;
     track = (track < 0 ? 0 : 10 * track) + c - '0';
-  } 
+  }
 }

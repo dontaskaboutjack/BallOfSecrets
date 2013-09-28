@@ -5,14 +5,14 @@
 
 
 #define DEBOUNCE 10  // number of ms to debounce
-byte buttons[] = {6,15,16,17,18,19}; 
+byte buttons[] = {6,15,16,17,18,19};
 #define NUMBUTTONS sizeof(buttons)
 byte pressed[NUMBUTTONS];
 
 //original setup code, now called by the zSetup
 void checkButtonsSetup() {
   byte i;
-  
+
   // Make input & enable pull-up resistors on switch pins
   for (i=0; i< NUMBUTTONS; i++) {
     pinMode(buttons[i], INPUT);
@@ -35,30 +35,30 @@ int check_switches()
      // we wrapped around, lets just try again
      lasttime = millis();
   }
-  
+
   if ((lasttime + DEBOUNCE) > millis()) {
     // not enough time has passed to debounce
-    return -1; 
+    return -1;
   }
   // ok we have waited DEBOUNCE milliseconds, lets reset the timer
   lasttime = millis();
-  
+
   //Actual rewritten debounced code
   for (index = 0; index < NUMBUTTONS; index++) {
     currentstate[index] = digitalRead(buttons[index]);
     if(currentstate[index] == 1) {
       if (currentstate[index] == previousstate[index]) {
-        pressed[index] = 1;  
+        pressed[index] = 1;
       }
       if (currentstate[index] != previousstate[index]) {
         pressed[index] = 0;
       }
     }
-    
+
     if (currentstate[index] == 0){
-      pressed[index]=0; 
+      pressed[index]=0;
     }
-    
+
     previousstate[index] = currentstate[index];
 
   }

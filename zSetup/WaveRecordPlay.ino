@@ -10,7 +10,7 @@ void error(char* str) {
   }
   while(1);
 }
-//------------------------------------------------------------------------------
+
 // print help message
 void help(void) {
   PgmPrintln("a     play all WAV files in the root dir");
@@ -26,17 +26,17 @@ void help(void) {
   PgmPrintln("v     record new track voice activated");
   PgmPrintln("<n>v  record over deleted track voice activated");
 }
-//------------------------------------------------------------------------------
+
 // clear all bits in track list
 void listClear(void)  {
   memset(trackList, 0, sizeof(trackList));
 }
-//------------------------------------------------------------------------------
+
 // return bit for track n
 uint8_t listGet(uint8_t n) {
   return (trackList[n >> 3] >> (n & 7)) & 1;
 }
-//------------------------------------------------------------------------------
+
 // print list of tracks in ten columns with each column four characters wide
 void listPrint(void) {
   PgmPrintln("\nTrack list:");
@@ -56,12 +56,12 @@ void listPrint(void) {
   } while (n++ != 255);
   if (nc) Serial.println();
 }
-//------------------------------------------------------------------------------
+
 // set bit for track n
 void listSet(uint8_t n) {
   trackList[n >> 3] |= 1 << (n & 7);
 }
-//------------------------------------------------------------------------------
+
 // Nag user about power and SD card
 void nag(void) {
   PgmPrintln("\nTo avoid USB noise use a DC adapter");
@@ -83,9 +83,8 @@ void nag(void) {
     PgmPrintln("\nCard is not erase capable and can't be used for recording!");
   }
 }
-//------------------------------------------------------------------------------
-// check for pause resume BMCHANGE
 
+// check for pause resume BMCHANGE
 void pauseResume(void) {
   //coded added here trying to get the ability to delete files, but it would just corrupt the SD Card. Leaving in for later attempts.
   if ((check_switches() == potentialDeleteWhilePlaying) && (deleteWhilePlayingTimer + 3000 < millis())) {
@@ -93,7 +92,6 @@ void pauseResume(void) {
     file.close();
     Serial.println("trying to delete");
   }
-
 
   if (!Serial.available()) return;
   uint8_t c = Serial.read();
@@ -111,7 +109,7 @@ void pauseResume(void) {
     }
   }
 }
-//------------------------------------------------------------------------------
+
 // play all files in the root dir
 void playAll(void) {
   dir_t dir;
@@ -151,7 +149,7 @@ uint8_t playBegin(char* name) {
   potentialDeleteWhilePlaying = currentComb;
   if (!file.open(&root, name, O_READ)) { //if we cant open it, not sure what to do here.
     PgmPrint("Can't open: ");
-    Serial.println(name); 
+    Serial.println(name);
   }
   if (!wave.play(&file)) { // if we cant play the file
     if(currentComb>0) { //and if we actually did call a file
@@ -185,7 +183,7 @@ uint8_t playBegin(char* name) {
   return true;
 }
 //------------------------------------------------------------------------------
-// play a file, sends it to playBegin to do the work. Calls pauseResume 
+// play a file, sends it to playBegin to do the work. Calls pauseResume
 void playFile(char* name) {
   if (!playBegin(name)) {
     return;

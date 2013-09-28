@@ -5,11 +5,6 @@
 #include <ctype.h>
 #include "main.h"
 
-int currentComb; //stores the combination of buttons that are currently pressed
-int recordingLED = 7;
-unsigned long ccDebounceTimer; //currentComb debounce timer
-int previousComb; //currentComb debounce comparison
-
 void setup(){
   Serial.begin(9600);
   waveSetup(); //remainder of original setup functions from the library

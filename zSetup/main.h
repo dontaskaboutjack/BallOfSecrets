@@ -15,7 +15,7 @@
 // Voltage Reference Selections for ADC
 //#define ADC_REFERENCE ADC_REF_AREF  // use voltage on AREF pin
  #define ADC_REFERENCE ADC_REF_AVCC  // use 5V VCC
-//
+
 // print the ADC range while recording if > 0
 // print adcMax,adcMin if > 1
 #define DISPLAY_RECORD_LEVEL 1
@@ -36,3 +36,8 @@ int16_t lastTrack = -1; // Highest track number
 uint8_t trackList[32];  // bit list of used tracks
 unsigned long deleteWhilePlayingTimer;  //tracks whether we should delete when playing BMCHANGE
 int potentialDeleteWhilePlaying; // holds combination of currently playing file BMCHANGE
+
+int currentComb; //stores the combination of buttons that are currently pressed
+int recordingLED = 7;
+unsigned long ccDebounceTimer; //currentComb debounce timer
+int previousComb; //currentComb debounce comparison

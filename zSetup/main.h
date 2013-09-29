@@ -14,7 +14,7 @@
 //
 // Voltage Reference Selections for ADC
 //#define ADC_REFERENCE ADC_REF_AREF  // use voltage on AREF pin
- #define ADC_REFERENCE ADC_REF_AVCC  // use 5V VCC
+#define ADC_REFERENCE ADC_REF_AVCC  // use 5V VCC
 
 // print the ADC range while recording if > 0
 // print adcMax,adcMin if > 1

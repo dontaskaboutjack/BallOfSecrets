@@ -1,4 +1,4 @@
-#include <math.h> // for calculating the current combination
+#include <math.h>
 #include <SdFat.h>
 #include <WaveRP.h>
 #include <SdFatUtil.h>

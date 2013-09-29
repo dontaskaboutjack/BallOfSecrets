@@ -423,52 +423,14 @@ void trackRecord(int16_t track, uint8_t mode) {
   }
 #endif // PRINT_DEBUG_INFO
 }
-//==============================================================================
-// Standard Arduino setup() and loop() functions
-//------------------------------------------------------------------------------
+
 // setup Serial port and SD card
 void waveSetup(void) {
-  Serial.begin(9600);
   delay(10);
-  PgmPrint("\nFreeRam: ");
+  PgmPrintln("\nFreeRam: ");
   Serial.println(FreeRam());
   if (!card.init()) error("card.init");
   if (!vol.init(&card)) error("vol.init");
   if (!root.openRoot(&vol)) error("openRoot");
   nag();  // nag user about power and SD card
 }
-
-// loop to play and record files.
-//void loop() {
-//  // insure file is closed
-//  if (file.isOpen()) file.close();
-//  // scan root dir to build track list and set lastTrack
-//  scanRoot();
-//  while (Serial.read() >= 0) {}
-//  PgmPrintln("\ntype a command or h for help");
-//  int16_t track = -1;
-//  uint8_t c;
-//  while(track < 256){
-//    while (!Serial.available()) {}
-//    c = Serial.read();
-//    if (!isdigit(c)) break;
-//    track = (track < 0 ? 0 : 10 * track) + c - '0';
-//  }
-//  if (track < 0 && (c == 'd' || c == 'p')) {
-//    if (lastTrack < 0) {
-//      PgmPrintln("No tracks exist");
-//      return;
-//    }
-//    track = lastTrack;
-//  }
-//  Serial.println();
-//  if (c == 'a') playAll();
-//  else if (c == 'c') trackClear();
-//  else if (c == 'd') trackDelete(track);
-//  else if (c == 'h') help();
-//  else if (c == 'l') listPrint();
-//  else if (c == 'p') trackPlay(track);
-//  else if (c == 'r' || c == 'v') trackRecord(track, c);
-//  else PgmPrintln("? - type h for help");
-//}
-//------------------------------------------------------------------------------

@@ -27,6 +27,7 @@ void help(void) {
   PgmPrintln("<n>v  record over deleted track voice activated");
 }
 
+// used
 // clear all bits in track list
 void listClear(void)  {
   memset(trackList, 0, sizeof(trackList));
@@ -60,28 +61,6 @@ void listPrint(void) {
 // set bit for track n
 void listSet(uint8_t n) {
   trackList[n >> 3] |= 1 << (n & 7);
-}
-
-// Nag user about power and SD card
-void nag(void) {
-  PgmPrintln("\nTo avoid USB noise use a DC adapter");
-  PgmPrintln("or battery for Arduino power.\n");
-  uint8_t bpc = vol.blocksPerCluster();
-  PgmPrint("BlocksPerCluster: ");
-  Serial.println(bpc, DEC);
-  uint8_t align = vol.dataStartBlock() & 0X3F;
-  PgmPrint("Data alignment: ");
-  Serial.println(align, DEC);
-  PgmPrint("sdCard size: ");
-  Serial.print(card.cardSize()/2000UL);PgmPrintln(" MB");
-  if (align || bpc < 64) {
-    PgmPrintln("\nFor best results use a 2 GB or larger card.");
-    PgmPrintln("Format the card with 64 blocksPerCluster and alignment = 0.");
-    PgmPrintln("If possible use SDFormater from www.sdcard.org/consumers/formatter/");
-  }
-  if (!card.eraseSingleBlockEnable()) {
-    PgmPrintln("\nCard is not erase capable and can't be used for recording!");
-  }
 }
 
 // check for pause resume BMCHANGE
@@ -272,7 +251,8 @@ void recordSoundActivated(void) {
     }
   }
 }
-//------------------------------------------------------------------------------
+
+// used
 // scan root directory for track list and recover partial tracks
 void scanRoot(void) {
   dir_t dir;
@@ -312,7 +292,7 @@ void scanRoot(void) {
     root.seekSet(pos);
   }
 }
-//------------------------------------------------------------------------------
+
 // delete all tracks on SD
 void trackClear(void) {
   char name[13];
@@ -424,13 +404,33 @@ void trackRecord(int16_t track, uint8_t mode) {
 #endif // PRINT_DEBUG_INFO
 }
 
-// setup Serial port and SD card
-void waveSetup(void) {
+// SD Card information
+void card_info(void) {
+  uint8_t bpc = vol.blocksPerCluster();
+  PgmPrint("BlocksPerCluster: ");
+  Serial.println(bpc, DEC);
+  uint8_t align = vol.dataStartBlock() & 0X3F;
+  PgmPrint("Data alignment: ");
+  Serial.println(align, DEC);
+  PgmPrint("sdCard size: ");
+  Serial.print(card.cardSize()/2000UL);PgmPrintln(" MB");
+  if (align || bpc < 64) {
+    PgmPrintln("\nFor best results use a 2 GB or larger card.");
+    PgmPrintln("Format the card with 64 blocksPerCluster and alignment = 0.");
+    PgmPrintln("If possible use SDFormater from www.sdcard.org/consumers/formatter/");
+  }
+  if (!card.eraseSingleBlockEnable()) {
+    PgmPrintln("\nCard is not erase capable and can't be used for recording!");
+  }
+}
+
+// Setup serial port and SD card
+void waveShieldSetup(void) {
   delay(10);
-  PgmPrintln("\nFreeRam: ");
+  PgmPrint("FreeRam: ");
   Serial.println(FreeRam());
   if (!card.init()) error("card.init");
   if (!vol.init(&card)) error("vol.init");
   if (!root.openRoot(&vol)) error("openRoot");
-  nag();  // nag user about power and SD card
+  card_info();
 }

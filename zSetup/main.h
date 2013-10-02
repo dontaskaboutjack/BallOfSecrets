@@ -25,7 +25,10 @@
 //
 // print bad wave file size and SD busy errors for debug
 #define PRINT_DEBUG_INFO 1
-//------------------------------------------------------------------------------
+
+// debounce timer in ms
+#define DEBOUNCE 10
+
 // global variables
 Sd2Card card;           // SD/SDHC card with support for version 2.00 features
 SdVolume vol;           // FAT16 or FAT32 volume
@@ -40,4 +43,3 @@ int potentialDeleteWhilePlaying; // holds combination of currently playing file 
 int currentComb; //stores the combination of buttons that are currently pressed
 int recordingLED = 7;
 unsigned long ccDebounceTimer; //currentComb debounce timer
-int previousComb; //currentComb debounce comparison

@@ -15,10 +15,6 @@ void setup(){
 
 void loop(){
 
-  static int previousComb;
-  int16_t track = -1;
-  uint8_t c;
-
   // close previously opened file if not
   if (file.isOpen()) {
     file.close();
@@ -26,20 +22,6 @@ void loop(){
 
   //scan root dir to build track list and set lastTrack
   scanRoot();
-
-  while(track < 256) {
-
-    currentComb = check_switches();
-    if(currentComb > 0){
-
-      // debounce the combination of buttons
-      if ((ccDebounceTimer + 50) < millis()) {
-        if(currentComb == previousComb){
-          trackPlay(currentComb);
-        }
-        ccDebounceTimer = millis(); //set the timer
-        previousComb = currentComb; //set previous to current.
-      }
-    }
-  }
+  get_combination();
+  play_track();
 }

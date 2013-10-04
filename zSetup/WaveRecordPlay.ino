@@ -66,11 +66,12 @@ void listSet(uint8_t n) {
 // check for pause resume BMCHANGE
 void pauseResume(void) {
   //coded added here trying to get the ability to delete files, but it would just corrupt the SD Card. Leaving in for later attempts.
-  if ((check_switches() == potentialDeleteWhilePlaying) && (deleteWhilePlayingTimer + 3000 < millis())) {
-    wave.stop();
-    file.close();
-    Serial.println("trying to delete");
-  }
+  //if ((check_switches() == potentialDeleteWhilePlaying) && (deleteWhilePlayingTimer + 3000 < millis())) {
+  // if(check_switches()) {
+  //   wave.stop();
+  //   file.close();
+  // }
+  get_combination();
 
   if (!Serial.available()) return;
   uint8_t c = Serial.read();
@@ -89,44 +90,12 @@ void pauseResume(void) {
   }
 }
 
-// play all files in the root dir
-void playAll(void) {
-  dir_t dir;
-  char name[13];
-  uint8_t np = 0;
-  root.rewind();
-  while (root.readDir(&dir) == sizeof(dir)) {
-    //only play wave files
-    if (strncmp_P((char *)&dir.name[8], PSTR("WAV"), 3)) continue;
-    // remember current dir position
-    uint32_t pos = root.curPosition();
-    // format file name
-    SdFile::dirName(dir, name);
-    if (!playBegin(name)) continue;
-    PgmPrintln(", type 's' to skip file 'a' to abort");
-    while (wave.isPlaying()) {
-      if (Serial.available()) {
-        uint8_t c = Serial.read();
-        while (Serial.read() >= 0) {}
-        if (c == 's' || c == 'a') {
-          wave.stop();
-          file.close();
-          if (c == 'a') return;
-        }
-      }
-    }
-    file.close();
-    // restore dir position
-    root.seekSet(pos);
-  }
-}
-//------------------------------------------------------------------------------
 // start file playing BMCHANGE
 //Function now only allows for checking whether a file exists at that location, and if not, recording it.
 uint8_t playBegin(char* name) {
   deleteWhilePlayingTimer = millis(); //start the timer for deleting
   potentialDeleteWhilePlaying = currentComb;
-  if (!file.open(&root, name, O_READ)) { //if we cant open it, not sure what to do here.
+  if (!file.open(&root, name, O_READ)) {
     PgmPrint("Can't open: ");
     Serial.println(name);
   }
@@ -161,7 +130,7 @@ uint8_t playBegin(char* name) {
   Serial.print(name);
   return true;
 }
-//------------------------------------------------------------------------------
+
 // play a file, sends it to playBegin to do the work. Calls pauseResume
 void playFile(char* name) {
   if (!playBegin(name)) {
@@ -177,7 +146,7 @@ void playFile(char* name) {
     PgmPrint("busyErrors: ");
     Serial.println(wave.errors(), DEC);
   }
-#endif // PRINT_DEBUG_INFO
+#endif
 }
 //-----------------------------------------------------------------------------
 //BMCHANGE Altered this function so that it would only record for 5000 seconds with another debouncer
@@ -206,6 +175,7 @@ void recordManualControl(void) {
     // check for pause/stop
     pauseResume();
     Serial.println("just left pauseResume");
+    Serial.println(currentComb);
     if (currentComb==0) {
       Serial.println("currentComb>0 check passed");
       Serial.print("timer is ");

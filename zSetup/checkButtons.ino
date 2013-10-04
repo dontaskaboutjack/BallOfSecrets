@@ -17,26 +17,23 @@ void buttonsSetup() {
 }
 
 // Debounce code
-int check_switches()
-{
+int get_combination() {
   static byte previousstate[NUMBUTTONS];
   static byte currentstate[NUMBUTTONS];
   static long lasttime;
-  currentComb = 0;
 
-  // debounce only when >10ms have passed since last run
-  if ((lasttime + DEBOUNCE) > millis()) {
+  if ((lasttime + 50) > millis()) {
     return -1;
   }
-  lasttime = millis();
 
+  currentComb = 0;
   for (byte i = 0; i < NUMBUTTONS; i++) {
     currentstate[i] = digitalRead(buttons[i]);
     if(currentstate[i] == 1) {
       pressed[i] = (currentstate[i] == previousstate[i]) ? 1:0;
       if (pressed[i]) {
         int binPower = (NUMBUTTONS-i-1);
-        currentComb += (0.5 + pow(2,binPower)); //need the .5 because its a float
+        currentComb += (int) pow(2,binPower);
       }
     }
     else {
@@ -44,6 +41,22 @@ int check_switches()
     }
     previousstate[i] = currentstate[i];
   }
-  return currentComb;
+
+  lasttime = millis();
+}
+
+// play track
+void play_track() {
+  static int previousComb;
+
+  if(currentComb > 0){
+    Serial.println(currentComb);
+    if(currentComb != previousComb){
+      wave.stop();
+      file.close();
+    }
+    trackPlay(currentComb);
+    previousComb = currentComb;
+  }
 }
 

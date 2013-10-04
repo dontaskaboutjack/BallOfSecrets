@@ -42,4 +42,3 @@ int potentialDeleteWhilePlaying; // holds combination of currently playing file 
 
 int currentComb; //stores the combination of buttons that are currently pressed
 int recordingLED = 7;
-unsigned long ccDebounceTimer; //currentComb debounce timer

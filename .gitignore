@@ -213,3 +213,6 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+#sublime-stino
+stino.settings

@@ -11,22 +11,6 @@ void error(char* str) {
   while(1);
 }
 
-// print help message
-void help(void) {
-  PgmPrintln("a     play all WAV files in the root dir");
-  PgmPrintln("c     clear - deletes all tracks");
-  PgmPrintln("d     delete last track");
-  PgmPrintln("<n>d  delete track number <n>");
-  PgmPrintln("h     help");
-  PgmPrintln("l     list track numbers");
-  PgmPrintln("p     play last track");
-  PgmPrintln("<n>p  play track number <n>");
-  PgmPrintln("r     record new track as last track");
-  PgmPrintln("<n>r  record over deleted track <n>");
-  PgmPrintln("v     record new track voice activated");
-  PgmPrintln("<n>v  record over deleted track voice activated");
-}
-
 // used
 // clear all bits in track list
 void listClear(void)  {
@@ -93,15 +77,13 @@ void pauseResume(void) {
 // start file playing BMCHANGE
 //Function now only allows for checking whether a file exists at that location, and if not, recording it.
 uint8_t playBegin(char* name) {
-  deleteWhilePlayingTimer = millis(); //start the timer for deleting
-  potentialDeleteWhilePlaying = currentComb;
   if (!file.open(&root, name, O_READ)) {
     PgmPrint("Can't open: ");
     Serial.println(name);
   }
   if (!wave.play(&file)) { // if we cant play the file
     if(currentComb>0) { //and if we actually did call a file
-      recordFromButtons(currentComb); //then record one for that combination
+      trackRecord(currentComb, 'r');
       return false;
     }
     else if(currentComb == 0) {
@@ -138,7 +120,12 @@ void playFile(char* name) {
   }
   PgmPrintln(", type 's' to stop 'p' to pause");
   while (wave.isPlaying()) {
-    pauseResume();
+    Serial.println(get_combination());
+    if(!compare_combination()){
+      wave.stop();
+      file.close();
+      return;
+    }
   }
   file.close();
 #if PRINT_DEBUG_INFO
@@ -148,7 +135,7 @@ void playFile(char* name) {
   }
 #endif
 }
-//-----------------------------------------------------------------------------
+
 //BMCHANGE Altered this function so that it would only record for 5000 seconds with another debouncer
 void recordManualControl(void) {
   PgmPrintln("Recording - type 's' to stop 'p' to pause");
@@ -190,9 +177,7 @@ void recordManualControl(void) {
     digitalWrite(recordingLED,LOW);
   }
 }
-//-----------------------------------------------------------------------------
-#define SAR_TIMEOUT 4
-#define SAR_THRESHOLD 40
+
 void recordSoundActivated(void) {
   uint32_t t;
   wave.pause();
@@ -284,7 +269,7 @@ void trackClear(void) {
   }
   PgmPrintln("Deleted all tracks!");
 }
-//------------------------------------------------------------------------------
+
 // delete a track
 void trackDelete(int16_t track) {
   char name[13];
@@ -302,7 +287,7 @@ void trackDelete(int16_t track) {
     PgmPrintln("Delete failed!");
   }
 }
-//------------------------------------------------------------------------------
+
 // delete a track without checking
 void trackDeleteNoCheck(int16_t track) {
   char name[13];
@@ -313,7 +298,7 @@ void trackDeleteNoCheck(int16_t track) {
     PgmPrintln("Delete failed!");
   }
 }
-//------------------------------------------------------------------------------
+
 // format a track name in 8.3 format
 uint8_t trackName(int16_t number, char* name) {
   if (0 <= number && number <= 255) {
@@ -327,14 +312,20 @@ uint8_t trackName(int16_t number, char* name) {
   Serial.println(number);
   return false;
 }
-//------------------------------------------------------------------------------
+
 // play a track
 void trackPlay(int16_t track) {
-  char name[13];
-  if (!trackName(track, name)) {return;}
-  playFile(name);
+  if(track > 0) {
+    PgmPrint("Playing track number:");
+    Serial.println(track);
+    char name[13];
+    if (!trackName(track, name)) {
+      return;
+    }
+    playFile(name);
+  }
 }
-//------------------------------------------------------------------------------
+
 // record a track
 void trackRecord(int16_t track, uint8_t mode) {
   char name[13];
@@ -395,7 +386,7 @@ void card_info(void) {
 }
 
 // Setup serial port and SD card
-void waveShieldSetup(void) {
+void wave_shield_setup(void) {
   delay(10);
   PgmPrint("FreeRam: ");
   Serial.println(FreeRam());

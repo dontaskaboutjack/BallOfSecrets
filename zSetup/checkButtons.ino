@@ -6,7 +6,7 @@ byte buttons[] = {6,15,16,17,18,19};
 byte pressed[NUMBUTTONS];
 
 //Setup buttons for digitalWrite
-void buttonsSetup() {
+void buttons_setup() {
   byte i;
 
   // Make input & enable pull-up resistors on switch pins
@@ -25,7 +25,7 @@ int get_combination() {
   if ((lasttime + 50) > millis()) {
     return -1;
   }
-
+  previousComb = currentComb;
   currentComb = 0;
   for (byte i = 0; i < NUMBUTTONS; i++) {
     currentstate[i] = digitalRead(buttons[i]);
@@ -45,18 +45,11 @@ int get_combination() {
   lasttime = millis();
 }
 
-// play track
-void play_track() {
-  static int previousComb;
-
-  if(currentComb > 0){
-    Serial.println(currentComb);
-    if(currentComb != previousComb){
-      wave.stop();
-      file.close();
-    }
-    trackPlay(currentComb);
-    previousComb = currentComb;
+//compare combination states
+boolean compare_combination(){
+  if(previousComb != currentComb){
+    return false;
   }
+  return true;
 }
 

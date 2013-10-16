@@ -120,7 +120,7 @@ void playFile(char* name) {
   }
   PgmPrintln(", type 's' to stop 'p' to pause");
   while (wave.isPlaying()) {
-    Serial.println(get_combination());
+    get_combination();
     if(!compare_combination()){
       wave.stop();
       file.close();
@@ -159,22 +159,14 @@ void recordManualControl(void) {
     }
 #endif // DISPLAY_RECORD_LEVEL > 1
 #endif // DISPLAY_RECORD_LEVEL > 0
-    // check for pause/stop
-    pauseResume();
-    Serial.println("just left pauseResume");
-    Serial.println(currentComb);
-    if (currentComb==0) {
-      Serial.println("currentComb>0 check passed");
-      Serial.print("timer is ");
-      Serial.print(timer);
-      Serial.print(" and millis is ");
-      Serial.println(millis());
-      if ((timer + 5000) < millis()) {
-        Serial.println("stopping wave");
-        wave.stop();
-      }
+
+    get_combination();
+    if (currentComb==0 || (millis() - timer > 5000)) {
+      digitalWrite(recordingLED,LOW);
+      wave.stop();
+      PgmPrint("Duration:");
+      Serial.println(millis()-timer);
     }
-    digitalWrite(recordingLED,LOW);
   }
 }
 

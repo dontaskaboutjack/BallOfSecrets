@@ -5,7 +5,6 @@
 #include <ctype.h>
 #include "main.h"
 
-// Arduino setup
 void setup(){
   Serial.begin(9600);
   wave_shield_setup();
@@ -15,12 +14,10 @@ void setup(){
 
 void loop(){
 
-  // close previously opened file if not
   if (file.isOpen()) {
     file.close();
   }
 
-  //scan root dir to build track list and set lastTrack
   scanRoot();
   get_combination();
   trackPlay(currentComb);

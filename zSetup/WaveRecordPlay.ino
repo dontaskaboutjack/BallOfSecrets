@@ -11,7 +11,6 @@ void error(char* str) {
   while(1);
 }
 
-// used
 // clear all bits in track list
 void listClear(void)  {
   memset(trackList, 0, sizeof(trackList));
@@ -22,68 +21,20 @@ uint8_t listGet(uint8_t n) {
   return (trackList[n >> 3] >> (n & 7)) & 1;
 }
 
-// print list of tracks in ten columns with each column four characters wide
-void listPrint(void) {
-  PgmPrintln("\nTrack list:");
-  uint8_t n = 0;
-  uint8_t nc = 0;
-  do {
-    if (!listGet(n)) continue;
-    if (n < 100) Serial.print(' ');
-    if (n < 10) Serial.print(' ');
-    Serial.print(n, DEC);
-    if (++nc == 10) {
-      Serial.println();
-      nc = 0;
-    } else {
-      Serial.print(' ');
-    }
-  } while (n++ != 255);
-  if (nc) Serial.println();
-}
-
 // set bit for track n
 void listSet(uint8_t n) {
   trackList[n >> 3] |= 1 << (n & 7);
 }
 
-// check for pause resume BMCHANGE
-void pauseResume(void) {
-  //coded added here trying to get the ability to delete files, but it would just corrupt the SD Card. Leaving in for later attempts.
-  //if ((check_switches() == potentialDeleteWhilePlaying) && (deleteWhilePlayingTimer + 3000 < millis())) {
-  // if(check_switches()) {
-  //   wave.stop();
-  //   file.close();
-  // }
-  get_combination();
-
-  if (!Serial.available()) return;
-  uint8_t c = Serial.read();
-  while (Serial.read() >= 0) {}
-  if (c == 's') {
-    wave.stop();
-  } else if (c == 'p') {
-    wave.pause();
-    while (wave.isPaused()) {
-      PgmPrintln("\nPaused - type 's' to stop 'r' to resume");
-      while (!Serial.available()) {}
-      c = Serial.read();
-      if (c == 's') wave.stop();
-      if (c == 'r') wave.resume();
-    }
-  }
-}
-
-// start file playing BMCHANGE
-//Function now only allows for checking whether a file exists at that location, and if not, recording it.
+// If file not found, call trackRecord
 uint8_t playBegin(char* name) {
   if (!file.open(&root, name, O_READ)) {
     PgmPrint("Can't open: ");
     Serial.println(name);
   }
-  if (!wave.play(&file)) { // if we cant play the file
-    if(currentComb>0) { //and if we actually did call a file
-      trackRecord(currentComb, 'r');
+  if (!wave.play(&file)) {
+    if(currentComb>0) {
+      trackRecord(currentComb);
       return false;
     }
     else if(currentComb == 0) {
@@ -113,7 +64,6 @@ uint8_t playBegin(char* name) {
   return true;
 }
 
-// play a file, sends it to playBegin to do the work. Calls pauseResume
 void playFile(char* name) {
   if (!playBegin(name)) {
     return;
@@ -136,7 +86,6 @@ void playFile(char* name) {
 #endif
 }
 
-//BMCHANGE Altered this function so that it would only record for 5000 seconds with another debouncer
 void recordManualControl(void) {
   PgmPrintln("Recording - type 's' to stop 'p' to pause");
   uint8_t nl = 0;
@@ -170,36 +119,6 @@ void recordManualControl(void) {
   }
 }
 
-void recordSoundActivated(void) {
-  uint32_t t;
-  wave.pause();
-  uint8_t n = 0;
-  wave.adcClearRange();
-  PgmPrintln("Recording - type 's' to stop");
-  while (1) {
-    if (wave.adcGetRange() >= SAR_THRESHOLD) {
-      if (wave.isPaused()) {
-        wave.resume();
-        Serial.print('r');
-        if (++n % 40 == 0) Serial.println();
-      }
-      t = millis();
-      wave.adcClearRange();
-    } else if (!wave.isPaused()) {
-      if ((millis() - t) > 1000*SAR_TIMEOUT) {
-        wave.pause();
-        Serial.print('p');
-        if (++n % 40 == 0) Serial.println();
-      }
-    }
-    if (Serial.read() == 's') {
-      wave.stop();
-      return;
-    }
-  }
-}
-
-// used
 // scan root directory for track list and recover partial tracks
 void scanRoot(void) {
   dir_t dir;
@@ -319,7 +238,7 @@ void trackPlay(int16_t track) {
 }
 
 // record a track
-void trackRecord(int16_t track, uint8_t mode) {
+void trackRecord(int16_t track) {
   char name[13];
   if (track < 0) track = lastTrack + 1;
   if (!trackName(track , name)) return;
@@ -341,11 +260,8 @@ void trackRecord(int16_t track, uint8_t mode) {
     file.remove();
     return;
   }
-  if (mode == 'v') {
-    recordSoundActivated();
-  } else {
-    recordManualControl();
-  }
+  recordManualControl();
+
   // trim unused space from file
   wave.trim(&file);
   file.close();

@@ -1,6 +1,3 @@
-//The origin of this code was a page on debouncing multiple buttons located here:
-//http://www.adafruit.com/blog/2009/10/20/example-code-for-multi-button-checker-with-debouncing/
-
 byte buttons[] = {6,15,16,17,18,19};
 #define NUMBUTTONS sizeof(buttons)
 byte pressed[NUMBUTTONS];

@@ -26,12 +26,14 @@ void listSet(uint8_t n) {
   trackList[n >> 3] |= 1 << (n & 7);
 }
 
-// If file not found, call trackRecord
 uint8_t playBegin(char* name) {
   if (!file.open(&root, name, O_READ)) {
     PgmPrint("Can't open: ");
     Serial.println(name);
+    trackRecord(currentComb);
   }
+
+  // If track does not exist
   if (!wave.play(&file)) {
     if(currentComb>0) {
       trackRecord(currentComb);
@@ -68,7 +70,6 @@ void playFile(char* name) {
   if (!playBegin(name)) {
     return;
   }
-  PgmPrintln(", type 's' to stop 'p' to pause");
   while (wave.isPlaying()) {
     get_combination();
     if(!compare_combination()){
@@ -78,6 +79,7 @@ void playFile(char* name) {
     }
   }
   file.close();
+  Serial.println();
 #if PRINT_DEBUG_INFO
   if (wave.errors()) {
     PgmPrint("busyErrors: ");
@@ -86,10 +88,10 @@ void playFile(char* name) {
 #endif
 }
 
-void recordManualControl(void) {
-  PgmPrintln("Recording - type 's' to stop 'p' to pause");
+unsigned long recordManualControl(void) {
+  PgmPrintln("Recording");
   uint8_t nl = 0;
-  unsigned long timer = millis(); //timer to track this recording = time at recording start
+  unsigned long timer = millis();
   while (wave.isRecording()) {
     digitalWrite(recordingLED,HIGH);
 #if DISPLAY_RECORD_LEVEL > 0
@@ -110,13 +112,15 @@ void recordManualControl(void) {
 #endif // DISPLAY_RECORD_LEVEL > 0
 
     get_combination();
-    if (currentComb==0 || (millis() - timer > 5000)) {
+    if (!compare_combination() || (millis() - timer > 5000)) {
       digitalWrite(recordingLED,LOW);
       wave.stop();
       PgmPrint("Duration:");
       Serial.println(millis()-timer);
     }
   }
+
+  return (millis() - timer);
 }
 
 // scan root directory for track list and recover partial tracks
@@ -181,24 +185,6 @@ void trackClear(void) {
   PgmPrintln("Deleted all tracks!");
 }
 
-// delete a track
-void trackDelete(int16_t track) {
-  char name[13];
-  if (!trackName(track, name)) return;
-  while (Serial.read() >= 0) {}
-  PgmPrint("Type y to delete: ");
-  while (!Serial.available()) {}
-  if (Serial.read() != 'y') {
-    PgmPrintln("Delete canceled!");
-    return;
-  }
-  if (SdFile::remove(&root, name)) {
-    PgmPrintln("Deleted!");
-  } else {
-    PgmPrintln("Delete failed!");
-  }
-}
-
 // delete a track without checking
 void trackDeleteNoCheck(int16_t track) {
   char name[13];
@@ -250,21 +236,25 @@ void trackRecord(int16_t track) {
     return;
   }
   PgmPrint("Creating: ");
+  Serial.println(millis());
   Serial.println(name);
   if (!file.createContiguous(&root, name, MAX_FILE_SIZE)) {
     PgmPrintln("Create failed");
     return;
   }
+  Serial.println(millis());
   if(!wave.record(&file, RECORD_RATE, MIC_ANALOG_PIN, ADC_REFERENCE)) {
     PgmPrintln("Record failed");
     file.remove();
     return;
   }
-  recordManualControl();
-
-  // trim unused space from file
-  wave.trim(&file);
-  file.close();
+  Serial.println(millis());
+  if(recordManualControl() < 100) {
+    trackDeleteNoCheck(track);
+  } else {
+    wave.trim(&file);
+    file.close();
+  }
 #if PRINT_DEBUG_INFO
   if (wave.errors() ){
     PgmPrint("busyErrors: ");
@@ -275,6 +265,8 @@ void trackRecord(int16_t track) {
 
 // SD Card information
 void card_info(void) {
+  PgmPrint("FreeRam: ");
+  Serial.println(FreeRam());
   uint8_t bpc = vol.blocksPerCluster();
   PgmPrint("BlocksPerCluster: ");
   Serial.println(bpc, DEC);
@@ -296,8 +288,6 @@ void card_info(void) {
 // Setup serial port and SD card
 void wave_shield_setup(void) {
   delay(10);
-  PgmPrint("FreeRam: ");
-  Serial.println(FreeRam());
   if (!card.init()) error("card.init");
   if (!vol.init(&card)) error("vol.init");
   if (!root.openRoot(&vol)) error("openRoot");

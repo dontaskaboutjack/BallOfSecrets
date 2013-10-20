@@ -18,7 +18,7 @@
 
 // print the ADC range while recording if > 0
 // print adcMax,adcMin if > 1
-#define DISPLAY_RECORD_LEVEL 1
+#define DISPLAY_RECORD_LEVEL 0
 
 // print file info - useful for debug
 #define PRINT_FILE_INFO 0
@@ -38,7 +38,7 @@ SdVolume vol;           // FAT16 or FAT32 volume
 SdFile root;            // volume's root directory
 SdFile file;            // current file
 WaveRP wave;            // wave file recorder/player
-int16_t lastTrack = -1; // Highest track number
+byte lastTrack = -1; // Highest track number
 uint8_t trackList[32];  // bit list of used tracks
 int currentComb; //stores the combination of buttons that are currently pressed
 int previousComb;

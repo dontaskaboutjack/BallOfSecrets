@@ -2,7 +2,6 @@ byte buttons[] = {6,15,16,17,18,19};
 #define NUMBUTTONS sizeof(buttons)
 byte pressed[NUMBUTTONS];
 
-//Setup buttons for digitalWrite
 void buttons_setup() {
   byte i;
 
@@ -42,7 +41,7 @@ int get_combination() {
   lasttime = millis();
 }
 
-//compare combination states
+//compare current and previous combinations
 boolean compare_combination(){
   if(previousComb != currentComb){
     return false;

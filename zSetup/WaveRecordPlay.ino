@@ -120,6 +120,7 @@ unsigned long recordManualControl(void) {
     }
   }
 
+  previousRecord = 1;
   return (millis() - timer);
 }
 
@@ -218,6 +219,20 @@ void trackPlay(int16_t track) {
     char name[13];
     if (!trackName(track, name)) {
       return;
+    }
+    if(compare_combination()) {
+      Serial.println("Initiate delete of this combination");
+      unsigned long timer = millis();
+      while(millis() - timer < 1000) {
+        get_combination();
+        if(currentComb == 0) {
+          return;
+        }
+      }
+      if(compare_combination()) {
+        trackDeleteNoCheck(track);
+        trackRecord(track);
+      }
     }
     playFile(name);
   }

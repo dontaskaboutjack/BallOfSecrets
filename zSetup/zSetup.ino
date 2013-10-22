@@ -20,5 +20,11 @@ void loop(){
 
   scanRoot();
   get_combination();
-  trackPlay(currentComb);
+
+  if(!previousRecord){
+    trackPlay(currentComb);
+  }
+  else if(previousRecord == 1 && currentComb == 0) {
+    previousRecord = 0;
+  }
 }

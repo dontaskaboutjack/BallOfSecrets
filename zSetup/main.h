@@ -44,3 +44,4 @@ int currentComb = 0; //stores the combination of buttons that are currently pres
 int previousComb = -1;
 int previousRecord = 0;
 int recordingLED = 7;
+int ledState = LOW;

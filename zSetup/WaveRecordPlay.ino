@@ -11,6 +11,22 @@ void error(char* str) {
   while(1);
 }
 
+void blinkLED(unsigned long interval) {
+  static unsigned long previousMillis = 0;
+
+  if(millis()-previousMillis > interval){
+    previous Millis = millis();
+
+    if(ledState == LOW) {
+      ledState = HIGH;
+    }else {
+      ledState = LOW;
+    }
+
+    digitalWrite(recordingLED, ledState);
+  }
+}
+
 // clear all bits in track list
 void listClear(void)  {
   memset(trackList, 0, sizeof(trackList));
@@ -78,8 +94,7 @@ void playFile(char* name) {
       return;
     }
   }
-  file.close();
-  Serial.println();
+  file.close();l
 #if PRINT_DEBUG_INFO
   if (wave.errors()) {
     PgmPrint("busyErrors: ");
@@ -93,7 +108,7 @@ unsigned long recordManualControl(void) {
   uint8_t nl = 0;
   unsigned long timer = millis();
   while (wave.isRecording()) {
-    digitalWrite(recordingLED,HIGH);
+    blinkLED(1000);
 #if DISPLAY_RECORD_LEVEL > 0
     wave.adcClearRange();
     delay(500);
@@ -112,7 +127,7 @@ unsigned long recordManualControl(void) {
 #endif // DISPLAY_RECORD_LEVEL > 0
 
     get_combination();
-    if (!compare_combination() || (millis() - timer > 5000)) {
+    if (!compare_combination() || (millis() - timer > 10000)) {
       digitalWrite(recordingLED,LOW);
       wave.stop();
       PgmPrint("Duration:");
@@ -221,9 +236,8 @@ void trackPlay(int16_t track) {
       return;
     }
     if(compare_combination()) {
-      Serial.println("Initiate delete of this combination");
       unsigned long timer = millis();
-      while(millis() - timer < 1000) {
+      while(millis() - timer < 2000) {
         get_combination();
         if(currentComb == 0) {
           return;
@@ -232,6 +246,7 @@ void trackPlay(int16_t track) {
       if(compare_combination()) {
         trackDeleteNoCheck(track);
         trackRecord(track);
+        return;
       }
     }
     playFile(name);
@@ -251,19 +266,16 @@ void trackRecord(int16_t track) {
     return;
   }
   PgmPrint("Creating: ");
-  Serial.println(millis());
   Serial.println(name);
   if (!file.createContiguous(&root, name, MAX_FILE_SIZE)) {
     PgmPrintln("Create failed");
     return;
   }
-  Serial.println(millis());
   if(!wave.record(&file, RECORD_RATE, MIC_ANALOG_PIN, ADC_REFERENCE)) {
     PgmPrintln("Record failed");
     file.remove();
     return;
   }
-  Serial.println(millis());
   if(recordManualControl() < 100) {
     trackDeleteNoCheck(track);
   } else {

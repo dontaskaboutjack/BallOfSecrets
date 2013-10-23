@@ -1,5 +1,4 @@
 #include <math.h>
-#include <SdFat.h>
 #include <WaveRP.h>
 #include <SdFatUtil.h>
 #include <ctype.h>

@@ -40,6 +40,8 @@ SdFile file;            // current file
 WaveRP wave;            // wave file recorder/player
 byte lastTrack = -1; // Highest track number
 uint8_t trackList[32];  // bit list of used tracks
-int currentComb; //stores the combination of buttons that are currently pressed
-int previousComb;
+int currentComb = 0; //stores the combination of buttons that are currently pressed
+int previousComb = -1;
+int previousRecord = 0;
 int recordingLED = 7;
+int ledState = LOW;

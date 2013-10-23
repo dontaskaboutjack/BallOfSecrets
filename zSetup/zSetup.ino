@@ -1,5 +1,4 @@
 #include <math.h>
-#include <SdFat.h>
 #include <WaveRP.h>
 #include <SdFatUtil.h>
 #include <ctype.h>
@@ -20,5 +19,11 @@ void loop(){
 
   scanRoot();
   get_combination();
-  trackPlay(currentComb);
+
+  if(!previousRecord){
+    trackPlay(currentComb);
+  }
+  else if(previousRecord == 1 && currentComb == 0) {
+    previousRecord = 0;
+  }
 }

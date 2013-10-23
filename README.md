@@ -3,9 +3,9 @@ BallOfSecrets (Arduino)
 
 Required libraries:
 
-https://code.google.com/p/wavehc/
-https://code.google.com/p/sdfatlib/
-https://code.google.com/p/waverp/
+* https://code.google.com/p/sdfatlib/
+* https://code.google.com/p/waverp/ (Modified)
+  * (line 429) `if (!sdCard->erase(sdStartBlock, sdEndBlock)) return false;` has been commented out
 
 Debouncing code inspiration:
 
